@@ -1,6 +1,9 @@
 package main
 
+import "base:runtime"
+
 import ma "vendor:miniaudio"
+
 import "core:fmt"
 import "core:os"
 import "core:path/filepath"
@@ -24,6 +27,7 @@ print_help_message :: proc() {
 	fmt.printf("\t- init: initialize project with necessary hidden files\n")
 	fmt.printf("\t- bind <name> <file1> <file2> <file3>...: create directory <name> and symlinks to these files\n")
 	fmt.printf("\t- play <name>: enter player selection mode and play\n")
+	fmt.printf("\t- gui: launch player\n")
 }
 
 setup_directories :: proc() -> os.Error {
@@ -173,7 +177,6 @@ play_playlist :: proc(name: string) -> os.Error {
 		}
 	}
 	return os.General_Error.None
-
 }
 
 main :: proc() {
@@ -202,7 +205,10 @@ main :: proc() {
 			return
 		}
 		play_playlist(os.args[2])
+	case "gui":
+		web_play()
 	case:
 		print_help_message()
 	}
+
 }
