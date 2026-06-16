@@ -17,7 +17,7 @@ CONFIG_DIR_NAME :: ".ohsowrite"
 
 Player_Command :: enum {
 	None,
-	Skip,
+	Play,
 	Quit,
 }
 
@@ -74,6 +74,7 @@ read_dir_to_filenames :: proc(dir_name: string) -> ([dynamic]string, os.Error) {
 		fmt.eprintln("Error opening directory %v", err)
 		return nil, err
 	}
+	defer os.close(dir)
 	files, err2 := os.read_all_directory(dir, context.allocator)
 	if err2 != nil {
 		return nil, err2
@@ -92,7 +93,7 @@ input_listener :: proc(cmd_chan: chan.Chan(Player_Command)) {
 		n, _ := os.read(os.stdin, buf[:])
 		if n > 0 {
 			if buf[0] == 'n' {
-				chan.send(cmd_chan, Player_Command.Skip)
+				chan.send(cmd_chan, Player_Command.Play)
 			} else if buf[0] == 'q' {
 				chan.send(cmd_chan, Player_Command.Quit)
 				break
@@ -120,9 +121,9 @@ check_and_stop_sound :: proc(sound: ^ma.sound, cmd_chan: chan.Chan(Player_Comman
 	for ma.sound_is_playing(sound) {
 		cmd, ok := chan.try_recv(cmd_chan)
 		if ok {
-			if cmd == Player_Command.Skip {
+			if cmd == Player_Command.Play {
 				ma.sound_stop(sound)
-				return Player_Command.Skip
+				return Player_Command.Play
 			}
 			if cmd == Player_Command.Quit {
 				ma.sound_stop(sound)
